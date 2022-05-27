@@ -70,8 +70,8 @@ class CloudSoft:
         )
         self.location = Location(
             api_key=appkey,
-            longitude=longitude,
-            latitude=latitude
+            # longitude=longitude,
+            # latitude=latitude
         )
         self.private_tel = PrivateTel(
             app_key=appkey,
@@ -84,7 +84,6 @@ class CloudSoft:
             secret=app_secret,
             token=wechat_token
         )
-
     from .date import YsDate
     from .decorate import rate_limit
     from .observer import Observer

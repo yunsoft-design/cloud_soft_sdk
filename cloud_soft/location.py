@@ -15,16 +15,15 @@ class Location:
     高德地图
     """
 
-    def __init__(self, api_key, longitude, latitude):
-        self._longitude = longitude
-        self._latitude = latitude
-        self._url = 'https://restapi.amap.com/v3/geocode/regeo?key=' + api_key + '&location=' + longitude + ',' + latitude + '&output=json&extensions=all&homeorcorp=0'
+    def __init__(self, api_key):
+        self._url = 'https://restapi.amap.com/v3/geocode/regeo?key=' + api_key
 
-    def get(self):
+    def get(self, longitude, latitude):
         """
         获取地理位置
         """
-        res = requests.get(self._url)
+        location_url = self._url + '&location=' + longitude + ',' + latitude + '&output=json&extensions=all&homeorcorp=0'
+        res = requests.get(location_url)
         answer = res.json()
         region = ''
         address = ''
@@ -39,14 +38,14 @@ class Location:
                 pois = str(pois['location']).split(',')
                 px = int(float(pois[0]) * step)
                 py = int(float(pois[1]) * step)
-                xx = (pow(int(float(self._longitude) * step) - px, 2) + pow(int(float(self._latitude) * step) - py, 2)) / step
+                xx = (pow(int(float(longitude) * step) - px, 2) + pow(int(float(latitude) * step) - py, 2)) / step
                 if max_i > xx:
                     index = pid
                     max_i = xx
             address = pois_lst[index]['address']
         ret_info = {
-            'longitude': self._longitude,
-            'latitude': self._latitude,
+            'longitude': longitude,
+            'latitude': latitude,
             'region': region,
             'address': address
         }

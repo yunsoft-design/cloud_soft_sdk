@@ -30,7 +30,6 @@ setup(
         "Programming Language :: Python :: 3.8.2",  # Python版本
     ],
     install_requires=[
-        "backports.zoneinfo==0.2.1",
         "tzdata==2022.1",
         "sqlparse==0.4.2",
         "asgiref==3.5.2",
@@ -44,7 +43,7 @@ setup(
         "pycryptodome==3.14.1",
         "cryptography==37.0.2",
         "mysqlclient==2.1.0",
-        "django_redis==4.0.0",
+        "django_redis==5.2.0",
         "django-cors-headers==3.12.0",
         "django==4.1a1",
         "pytz==2022.1",
@@ -55,5 +54,5 @@ setup(
     编译  python setup.py build
     打包  python setup.py sdist
     安装  python setup.py install
-    重新安装 pip install D:\cloud_soft_sdk\dist\ys-cloudsoft-sdk-1.0.0.tar.gz --force-reinstall
+    重新安装 pip install D:\CloudSoftSDK\cloud_soft_sdk\dist\ys-cloudsoft-sdk-1.0.0.tar.gz --force-reinstall
 """

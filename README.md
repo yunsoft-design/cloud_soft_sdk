@@ -335,11 +335,12 @@ result2 = client.sms.verify_sms(
 from cloud_soft import CloudSoft
 
 client = CloudSoft(
-    appkey='',  # 高德地图appkey
+    appkey=''  # 高德地图appkey
+)
+address = client.location.get(
     longitude=321.321,  # 经度
     latitude=432.534  # 纬度
 )
-address = client.location.get()
 ```
 
 ### 12 华为隐私电话使用指南
