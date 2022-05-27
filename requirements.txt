@@ -1,0 +1,10 @@
+requests
+itsdangerous
+crypto
+django
+pinyin
+urllib3
+setuptools
+six
+xmltodict
+cryptography
