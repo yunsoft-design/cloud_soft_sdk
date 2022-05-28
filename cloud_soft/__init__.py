@@ -34,8 +34,6 @@ class CloudSoft:
                  appkey=None,
                  sender=None,
                  template_id=None,
-                 longitude=None,
-                 latitude=None,
                  host=None,
                  ak=None,
                  sk=None,
@@ -51,8 +49,6 @@ class CloudSoft:
         :param appkey: 华为短信SMS appkey;高德地图appkey;华为隐私电话appkey
         :param sender: 华为短信SMS # 国内短信签名通道号或国际/港澳台短信通道号
         :param template_id: 华为短信SMS 短信模板
-        :param longitude: 高德经度
-        :param latitude: 高德纬度
         :param host: 华为隐私电话服务器IP
         :param ak: 华为隐私电话ak
         :param sk: 华为隐私电话sk

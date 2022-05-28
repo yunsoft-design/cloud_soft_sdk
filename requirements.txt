@@ -1,10 +1,9 @@
 requests
 itsdangerous
 crypto
-django
+Django
 pinyin
 urllib3
 setuptools
 six
 xmltodict
-cryptography

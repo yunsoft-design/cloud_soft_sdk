@@ -12,8 +12,7 @@ import requests
 import six
 import json
 import xmltodict
-from ys_exception import YsException
-from ys_obs import YsObs
+from cloud_soft.exception import YsException
 from django_redis import get_redis_connection
 from .menu import Menu
 from .reply import Replay
@@ -197,9 +196,12 @@ class Wechat(object):
         """
 
         @staticmethod
-        def get(user_info_id):
+        def get(user_info_id,observer):
             """
             获取带参临时二维码
+            :param user_info_id: 用户id
+            :param observer: obs对象
+            :return:
             """
             conn = get_redis_connection('qr_code')
             file = conn.get('file_' + str(user_info_id))
@@ -219,13 +221,13 @@ class Wechat(object):
                 ticket = ret['ticket']
                 wechat_url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + ticket
                 res = requests.get(url=wechat_url)
-                file = YsObs.base64_upload(res.content)
+                file = observer.base64_upload(res.content)
                 # qr_code = ret.get('qr_code', None)
                 conn.set('file_' + str(user_info_id), file)
                 conn.expire('file_' + str(user_info_id), 2591000)
             else:
                 file = bytes(file).decode()
-            url = YsObs.get_obs_url(file)
+            url = observer.get_obs_url(file)
             return url
 
     class Article(object):

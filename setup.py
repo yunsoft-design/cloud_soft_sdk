@@ -30,23 +30,7 @@ setup(
         "Programming Language :: Python :: 3.8.2",  # Python版本
     ],
     install_requires=[
-        "tzdata==2022.1",
-        "sqlparse==0.4.2",
-        "asgiref==3.5.2",
-        "xlwt==1.3.0",
-        "xlrd==2.0.1",
-        "requests==2.27.1",
-        "pinyin==0.4.0",
-        "itsdangerous==2.1.2",
-        "six==1.16.0",
-        "xmltodict==0.13.0",
-        "pycryptodome==3.14.1",
-        "cryptography==37.0.2",
-        "mysqlclient==2.1.0",
-        "django_redis==5.2.0",
-        "django-cors-headers==3.12.0",
-        "django==4.1a1",
-        "pytz==2022.1",
+
     ],
 )
 
