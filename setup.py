@@ -30,7 +30,15 @@ setup(
         "Programming Language :: Python :: 3.8.2",  # Python版本
     ],
     install_requires=[
-
+        'xmltodict',
+        'six',
+        'setuptools',
+        'urllib3',
+        'pinyin',
+        'Django',
+        'crypto',
+        'itsdangerous',
+        'requests',
     ],
 )
 
