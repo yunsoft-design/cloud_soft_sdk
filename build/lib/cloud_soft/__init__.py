@@ -95,7 +95,6 @@ class CloudSoft:
                 secret=app_secret,
                 token=wechat_token
             )
-        # 如果是目录,必须要创建类
         from .signature import Signature
         self.signature = Signature()
         if pay_type is not None:
