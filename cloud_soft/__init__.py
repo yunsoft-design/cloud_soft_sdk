@@ -117,5 +117,7 @@ class CloudSoft:
     from .regular import Regular
     from .character import Character
     from .transition import Transition
+    from .model_manage import ModelManage
+    from .abstract_models import CommonAbsModel, BaseAbsModel, AuditAbsModel
 
     from .interaction import BackendToFront, FrontToBackend

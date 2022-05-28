@@ -60,7 +60,7 @@ class BackendToFront:
         if visit_info == 0:
             return 0
         visit_info.result = ret_dct
-        visit_info.expand = int((time.time() - visit_info.create_time) * 1000)
+        visit_info.expand = int(time.time()-visit_info.create_time.timestamp())
         visit_info.save()
 
     @staticmethod
@@ -73,8 +73,8 @@ class BackendToFront:
         """
         if visit_info == 0:
             return 0
-        expand = int((time.time() - visit_info.update_time) * 1000)
-        visit_failure.objects.create(log_info_id=visit_info.id, error=e, expand=expand)
+        expand = int(time.time()-visit_info.create_time.timestamp())
+        visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
 
 
 class FrontToBackend(object):
@@ -82,7 +82,7 @@ class FrontToBackend(object):
     接收前端传来的数据
     """
 
-    def __init__(self, request,inter_code,visit_info):
+    def __init__(self, request, inter_code, visit_info):
         """
         :param request: 前端请求
         :param inter_code: 接口编号
@@ -173,13 +173,13 @@ class FrontToBackend(object):
                         params.update(body)
             # 2 保存请求信息
             user_info_id = None if params.get('user_info_id', None) is None or len(str(params['user_info_id']).strip()) == 0 else int(params['user_info_id'])
+
             is_mobile = self.check_mobile()
             ip = self.get_ip()
             visit_info = self._visit_info.objects.create(ip=ip, method=is_mobile, inter_code=self._inter_code, user_info_id=user_info_id, params=params)
             return {
-                'params':params,
-                'visit_info':visit_info
+                'params': params,
+                'visit_info': visit_info
             }
         except Exception as e:
             raise YsException('E0001', '上传参数错误', e)
-
