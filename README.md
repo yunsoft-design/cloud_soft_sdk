@@ -118,7 +118,7 @@ class Login01(View):
 
 ```python
 """
-    日期类使用指南
+    说明：针对日期处理的相关方法,不断丰富中...
 """
 from cloud_soft.ys_date import YsDate
 
@@ -142,7 +142,7 @@ wechat_time = YsDate.wechat_time('2022-05-06 11:10:01', '%Y-%m-%d %H:%M:%S')
 
 ```python
 """
-    自定义异常使用指南
+    说明：所有异常返回错误编码、错误路径、错误信息和报错后跳转页面。
 """
 from cloud_soft.ys_exception import YsException
 
@@ -161,7 +161,7 @@ except Exception as e:
 
 ```python
 """
-    OBS服务类使用指南
+    说明：华为obs服务,用于存储图片、语音、视频及其它文件。华为obs服务支持动态链接和链接有效期，可避免反复刷新
 """
 from cloud_soft.ys_observer import YsObserver
 
@@ -202,7 +202,7 @@ content = client.base64_down(
 
 ```python
 """
-    小程序类使用指南
+    说明：主要用于微信小程序相关方法。
 """
 from cloud_soft.ys_observer import YsObserver
 from cloud_soft.ys_applet import YsApplet
@@ -264,7 +264,7 @@ msg_info = client.nogice.send_user_request_msg(
 
 ```python
 """
-    字符串处理类使用指南
+    说明：用于字符串相关处理，完善中...
 """
 from cloud_soft.ys_character import YsCharacter
 
@@ -305,8 +305,7 @@ str_style = YsCharacter.get_chr_style(
 
 ```python
 """
-    装饰函数使用指南
-    本装饰函数主要用于限制访问次数
+    说明：装饰函数，目前支持限制接口单时间内的访问次数,如果单位时间内访问次数过多,可限制访问,也可直接从redis缓存中获取相同数据。
 """
 from django.views.generic import View
 from cloud_soft.ys_decorate import rate_limit
@@ -331,7 +330,7 @@ class Test(View):
 
 ```python
 """
-    正则验证使用指南
+    说明：正则表达式在python中的应用,完善中...
 """
 from cloud_soft.ys_regular import YsRegular
 
@@ -346,7 +345,7 @@ is_cert = YsRegular.cert_is_valid('988774164755584747')
 
 ```python
 """
-    访问令牌使用指南
+    说明：用于生成token和解析token
 """
 from cloud_soft.ys_token import YsToken
 
@@ -365,7 +364,7 @@ info = client.decode_token(token=token)
 
 ```python
 """
-    转换类使用指南
+    说明：用于类型转换，完善中...
 """
 from cloud_soft.ys_transition import YsTransition
 
@@ -388,7 +387,7 @@ to10 = YsTransition.sixty_two_to_dec(to62)
 
 ```python
 """
-    短信验证使用指南
+    说明：用于发送华为短信及短信验证
 """
 from cloud_soft.ys_sms import YsSms
 
@@ -417,7 +416,7 @@ result2 = client.verify_sms(
 
 ```python
 """
-    经纬度转地址使用指南
+    说明：用于高德地图中经纬度转详细地址
 """
 from cloud_soft.ys_location import YsLocation
 
@@ -434,7 +433,7 @@ address = client.get(
 
 ```python
 """
-    华为隐私电话使用指南
+    说明：用于华为隐私电话
 """
 from cloud_soft.ys_private_tel import YsPrivateTel
 
@@ -469,7 +468,7 @@ info3 = client.get_voice_url(
 
 ```python
 """
-    微信公众号SDK使用指南
+    说明：用于微信公众号相关接口
 """
 from cloud_soft.ys_wechat import YsWechat
 
@@ -551,7 +550,7 @@ result14 = client.reply.article(
 
 ```python
 """
-    云软签名使用指南
+    说明：用于数据签名验签和数据加密解密
 """
 from cloud_soft.ys_signature import YsSignature
 
@@ -559,7 +558,7 @@ from cloud_soft.ys_signature import YsSignature
 api_key = YsSignature.get_key(16)
 
 # 2 获取组织编号
-org_serial = YsSignature.get_org_number()
+org_serial = YsSignature.get_app_number()
 
 # 3 获取uuid
 uuid = YsSignature.build_nonce_str()
@@ -587,7 +586,7 @@ clear_text = YsSignature.decrypt(
 
 ```python
 """
-    微信支付使用指南
+    说明：用于微信支付相关功能
 """
 from cloud_soft.ys_payment import YsPayment
 from cloud_soft.ys_payment.type import PayType
