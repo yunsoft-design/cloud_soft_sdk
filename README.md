@@ -17,6 +17,7 @@
 包括云软算法Django开发框架中常用的SDK
 
 ## 安装
+
 ```
 $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
 ```
@@ -27,12 +28,68 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 
 ```python
 """
-    说明：主要用于接收前端数据和返回后端数据,可同时支持明码数据、签名数据和加密数据
+    说明：主要用于接收前端数据和返回后端数据,可同时支持明码数据、签名数据和加密数据。考虑大数据分析用户请求,把接收数据,返回数据保存在VisitInfo模型中,把报错信息保存在VisitFailure模型里
         1 接收前端数据：可同时接收header、ajax和json数据,并进行组合解析
         2 返回后端数据：可同时返回header、json数据
+
 """
 from django.views.generic import View
+from django.db import models
+from cloud_soft.ys_models import BaseAbsModel,ModelManage
 from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
+
+
+class UserInfo(BaseAbsModel):
+    """
+    用户信息模型
+    """
+    objects = ModelManage()
+    real_name = models.CharField(max_length=50, null=True, verbose_name='姓名')
+    mobile = models.CharField(max_length=20, unique=True, verbose_name='手机')
+
+    class Meta:
+        app_label = 'nucleus'
+        db_table = 'bas_user_info'
+        verbose_name = '用户信息模型'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.real_name
+
+
+
+class VisitInfo(BaseAbsModel):
+    """
+    日志信息模型
+    """
+    METHOD = (
+        (1, '电脑'),
+        (2, '手机'),
+    )
+    ip = models.CharField(max_length=20, verbose_name='请求ip')
+    method = models.SmallIntegerField(choices=METHOD, default=1, verbose_name='请求方式')
+    user_info = models.ForeignKey(to=UserInfo, null=True, on_delete=models.CASCADE, related_name='user_info_find_visit_info', verbose_name='用户id')
+    inter_code = models.CharField(max_length=20, verbose_name='请求接口编号')
+    params = models.TextField(null=True, verbose_name='上传参数')
+    result = models.TextField(null=True, verbose_name='返回参数')
+    expand = models.IntegerField(default=0, verbose_name='消耗时间')
+
+    class Meta:
+        db_table = 'bas_visit_info'
+        app_label = 'nucleus'
+
+
+class VisitFailure(BaseAbsModel):
+    """
+    日志错误模型
+    """
+    visit_info = models.ForeignKey(to=VisitInfo, on_delete=models.CASCADE, related_name='visit_info_find_visit_failure', verbose_name='日志主表')
+    failure = models.TextField(null=True, verbose_name='错误信息')
+    expand = models.IntegerField(default=0, verbose_name='消耗时间')
+
+    class Meta:
+        db_table = 'bas_visit_failure'
+        app_label = 'nucleus'
 
 
 class Login01(View):
