@@ -16,6 +16,11 @@
 
 包括云软算法Django开发框架中常用的SDK
 
+## 安装
+```
+$ pip install pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
+```
+
 ## 使用方法
 
 ### 01 前后台交互类使用指南
@@ -39,7 +44,7 @@ class Login01(View):
         前后台交互请求
         """
         inter_code = '01-011'  # 接口编号
-        direct = '登录注册 ● 发送验证码'
+        # direct = '登录注册 ● 发送验证码'
         receive = FrontToBackend(request=request, inter_code=inter_code, visit_info='VisitInfo访问表名').receive_params()
         try:
             ret_dct = "def get(inter_code,direct,'接口名')"  # 执行函数,返回字典
