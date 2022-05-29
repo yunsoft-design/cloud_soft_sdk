@@ -18,7 +18,7 @@
 
 ## 安装
 ```
-$ pip install pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
+$ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
 ```
 
 ## 使用方法
