@@ -29,7 +29,7 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 """
     说明：主要用于接收前端数据和返回后端数据,可同时支持明码数据、签名数据和加密数据
         1 接收前端数据：可同时接收header、ajax和json数据,并进行组合解析
-        2 返回后端数据：可同时返回header、json数据,
+        2 返回后端数据：可同时返回header、json数据
 """
 from django.views.generic import View
 from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
