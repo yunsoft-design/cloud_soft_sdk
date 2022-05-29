@@ -35,7 +35,7 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 """
 from django.views.generic import View
 from django.db import models
-from cloud_soft.ys_models import BaseAbsModel,ModelManage
+from cloud_soft.ys_models import BaseAbsModel, ModelManage
 from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
 
 
@@ -55,7 +55,6 @@ class UserInfo(BaseAbsModel):
 
     def __str__(self):
         return self.real_name
-
 
 
 class VisitInfo(BaseAbsModel):
@@ -104,13 +103,13 @@ class Login01(View):
         """
         inter_code = '01-011'  # 接口编号
         # direct = '登录注册 ● 发送验证码'
-        receive = FrontToBackend(request=request, inter_code=inter_code, visit_info='VisitInfo访问表名').receive_params()
+        receive = FrontToBackend(request=request, inter_code=inter_code, visit_info=VisitInfo).receive_params()
         try:
             ret_dct = "def get(inter_code,direct,'接口名')"  # 执行函数,返回字典
             BackendToFront.update_info(visit_info=receive['visit_info'], ret_dct=ret_dct)
             return BackendToFront.res_success(data=ret_dct)
         except Exception as e:
-            BackendToFront.update_error(visit_info=receive['visit_info'], visit_failure='VisitFailure访问报错的表名', e=e)
+            BackendToFront.update_error(visit_info=receive['visit_info'], visit_failure=VisitFailure, e=e)
             return BackendToFront.res_error(error=e)
 
 ```
