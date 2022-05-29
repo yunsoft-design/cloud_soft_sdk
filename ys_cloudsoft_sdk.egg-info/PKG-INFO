@@ -1,3 +1,16 @@
+Metadata-Version: 2.1
+Name: ys-cloudsoft-sdk
+Version: 1.0.0
+Summary: 云软Django SDK
+Home-page: https://github.com/yunsoft-design/yr-design
+Author: 陈倚云
+License: MIT
+Keywords: python sdk yunsoft cloudsoft api 云软SDK
+Classifier: Natural Language :: 简体中文Development Status :: 5 - Production/Stable
+Classifier: Topic :: Office/Business :: Financial
+Classifier: Programming Language :: Python :: 3.8.2
+Description-Content-Type: text/markdown
+
 # 云软算法-Django框架组件 API Python SDK
 
 ![title](https://raw.githubusercontent.com/yunsoft-design/image/LICENSE/ys_readme_title.png)

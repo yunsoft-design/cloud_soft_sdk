@@ -22,7 +22,26 @@ setup(
     license="MIT",
     keywords="python sdk yunsoft cloudsoft api 云软SDK",
     url="https://github.com/yunsoft-design/yr-design",
-    packages=["cloud_soft"],
+    packages=[
+        "cloud_soft"
+        ".ys_applet",
+        "cloud_soft.ys_character",
+        "cloud_soft.ys_date",
+        "cloud_soft.ys_decorate",
+        "cloud_soft.ys_exception",
+        "cloud_soft.ys_interaction",
+        "cloud_soft.ys_location",
+        "cloud_soft.ys_models",
+        "cloud_soft.ys_observer",
+        "cloud_soft.ys_payment",
+        "cloud_soft.ys_private_tel",
+        "cloud_soft.ys_regular",
+        "cloud_soft.ys_signature",
+        "cloud_soft.ys_sms",
+        "cloud_soft.ys_token",
+        "cloud_soft.ys_transition",
+        "cloud_soft.ys_wechat",
+    ],
     classifiers=[
         "Natural Language :: 简体中文"  # 支持语言
         "Development Status :: 5 - Production/Stable",
@@ -30,15 +49,14 @@ setup(
         "Programming Language :: Python :: 3.8.2",  # Python版本
     ],
     install_requires=[
-        'xmltodict',
-        'six',
-        'setuptools',
-        'urllib3',
-        'pinyin',
-        'Django',
-        'crypto',
-        'itsdangerous',
-        'requests',
+        # 'xmltodict',
+        # 'six',
+        # 'setuptools',
+        # 'urllib3',
+        # 'pinyin',
+        # 'crypto',
+        # 'itsdangerous',
+        # 'requests',
     ],
 )
 
