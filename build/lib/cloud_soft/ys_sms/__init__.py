@@ -23,11 +23,11 @@ class YsSms:
     华为短信发送
     """
 
-    def __init__(self, sms_url, appkey,app_secret,sender, template_id, redis_alias):
-        self._sms_url = sms_url # APP接入地址(在控制台"应用管理"页面获取)+接口访问URI
+    def __init__(self, sms_url, appkey, app_secret, sender, template_id, redis_alias):
+        self._sms_url = sms_url  # APP接入地址(在控制台"应用管理"页面获取)+接口访问URI
         self._APP_KEY = appkey  # APP_Key
         self._APP_SECRET = app_secret
-        self._sender = sender # 国内短信签名通道号或国际/港澳台短信通道号
+        self._sender = sender  # 国内短信签名通道号或国际/港澳台短信通道号
         self._template_id = template_id
         self._redis_alias = redis_alias
 
@@ -92,6 +92,8 @@ class YsSms:
         """
         验证手机号是否合法
         """
+        if len(phone_str) != 11:
+            return False
         if re.match(r'1[3,4,5,7,8]\d{9}', phone_str):
             return True
         else:
@@ -108,6 +110,4 @@ class YsSms:
             code = str(bytes(ret).decode('utf-8'))
             if code == sms_code:
                 result = True
-        return {
-            'result': result
-        }
+        return result

@@ -54,3 +54,27 @@ class YsTransition(object):
             pos = all_chars.rfind(s)
             num = num * 62 + pos
         return num
+
+    @staticmethod
+    def standard_str(in_str):
+        """
+        标准化上传字符串
+        :param in_str: 上传字符串
+        :return:
+        """
+        if in_str is None:
+            return None
+        out_str = None if len(str(in_str).strip()) == 0 else str(in_str).strip()
+        return out_str
+
+    @staticmethod
+    def standard_int(in_int):
+        """
+        标准化上传整数
+        :param in_int: 整数
+        :return:
+        """
+        if in_int is None:
+            return None
+        out_int = None if len(str(in_int).strip()) == 0 else int(str(in_int).strip())
+        return out_int

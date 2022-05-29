@@ -36,12 +36,12 @@ class YsSignature:
         return ''.join(random_str)
 
     @staticmethod
-    def get_org_number():
+    def get_app_number():
         """
         获取商户号
         :return:
         """
-        return str(int(time.time()))
+        return str(int(time.time() * 10000))
 
     @staticmethod
     def build_nonce_str():
