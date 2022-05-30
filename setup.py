@@ -36,7 +36,7 @@ setup(
         "cloud_soft.ys_payment",
         "cloud_soft.ys_private_tel",
         "cloud_soft.ys_regular",
-        "cloud_soft.ys_signature",
+        "cloud_soft.ys_crypto",
         "cloud_soft.ys_sms",
         "cloud_soft.ys_token",
         "cloud_soft.ys_transition",

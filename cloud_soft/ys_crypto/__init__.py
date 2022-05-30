@@ -17,10 +17,11 @@ import uuid
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
+from Crypto.Hash import SHA256
 from Crypto import Random
 
 
-class YsSignature:
+class YsCrypto:
     """
     云软注册
     """
@@ -115,3 +116,47 @@ class YsSignature:
             return clear_text
         except Exception:
             return clear_text
+
+    @staticmethod
+    def rsa_sign(private_dir, sign_str):
+        """
+        私钥签名
+        :param private_dir:
+        :param sign_str:
+        :return:
+        """
+        with open(private_dir, 'rb') as f:
+            private_pem = f.read()
+        private_key = RSA.import_key(private_pem)
+        signer = PKCS1_v1_5.new(private_key)
+        rand_hash = SHA256.new()
+        rand_hash.update(json.dumps(sign_str).encode('utf-8'))
+        signature = signer.sign(rand_hash)
+        return signature
+
+    def build_authorization(self,path,
+                            method,
+                            appid,
+                            serial_no,
+                            private_dir,
+                            data=None
+                            ):
+        """
+        生成授权
+        :param path:
+        :param method:
+        :param appid:
+        :param serial_no:
+        :param private_dir:
+        :param data:
+        :return:
+        """
+        time_stamp = str(int(time.time()))
+        nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
+        body = data if isinstance(data, str) else json.dumps(data) if data else ''
+        sign_str = '%s\n%s\n%s\n%s\n%s\n' % (method, path, time_stamp, nonce_str, body)
+        signature = self.rsa_sign(private_dir=private_dir, sign_str=sign_str)
+        authorization = 'Cloud-Soft-SHA256 appid="%s",nonce_str="%s",ys_crypto="%s",timestamp="%s",serial_no="%s"' % (appid, nonce_str, signature, time_stamp, serial_no)
+        return authorization
+
+

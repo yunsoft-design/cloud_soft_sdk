@@ -552,7 +552,7 @@ result14 = client.reply.article(
 """
     说明：用于数据签名验签和数据加密解密
 """
-from cloud_soft.ys_signature import YsSignature
+from cloud_soft.ys_crypto import YsSignature
 
 # 1 获取包含大小字字母数字在内的随机数,用于加密字符串
 api_key = YsSignature.get_key(16)
