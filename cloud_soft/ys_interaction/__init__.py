@@ -14,6 +14,8 @@ import time
 from django.shortcuts import HttpResponse
 from django_redis import get_redis_connection
 from ..ys_exception import YsException
+from ..ys_transition import YsTransition
+from ..ys_crypto import YsCrypto
 
 
 class BackendToFront:
@@ -27,7 +29,7 @@ class BackendToFront:
         返回正确信息
         """
         response = HttpResponse(
-            json.dumps({
+            content=json.dumps({
                 'status': 200,
                 'msg': msg,
                 'data': data
@@ -60,7 +62,7 @@ class BackendToFront:
         if visit_info == 0:
             return 0
         visit_info.result = ret_dct
-        visit_info.expand = int(time.time() - visit_info.create_time.timestamp())
+        visit_info.expand = int(time.time() - int(visit_info.id/10000000))
         visit_info.save()
 
     @staticmethod
@@ -73,7 +75,7 @@ class BackendToFront:
         """
         if visit_info == 0:
             return 0
-        expand = int(time.time() - visit_info.create_time.timestamp())
+        expand = int(time.time() - int(visit_info.id/10000000))
         visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
 
 
@@ -82,7 +84,7 @@ class FrontToBackend(object):
     接收前端传来的数据
     """
 
-    def __init__(self, request, inter_code, visit_info):
+    def __init__(self, request, inter_code, visit_info, private_key=None, method=None, path=None):
         """
         :param request: 前端请求
         :param inter_code: 接口编号
@@ -91,6 +93,9 @@ class FrontToBackend(object):
         self._request = request
         self._inter_code = inter_code
         self._visit_info = visit_info
+        self._private_key = private_key
+        self._method = method
+        self._path = path
 
     def check_mobile(self):
         """
@@ -135,14 +140,45 @@ class FrontToBackend(object):
             ip = self._request.META.get('REMOTE_ADDR')  # 未使用代理获取IP
         return ip
 
+    def verify_sign(self, headers, body):
+        """
+        验签
+        :param headers:
+        :param body:
+        :return:
+        """
+        if self._private_key is not None:
+            signature = YsTransition.standard_str(headers.get('signature', None))
+            sign_lst = signature[18:].split(',', 4)
+            sign_info = {}
+            for item in sign_lst:
+                item_lst = item.split('=', 1)
+                sign_info.update({item_lst[0]: item_lst[1]})
+            signature = eval(sign_info['signature'])
+            body = body if isinstance(body, str) else json.dumps(body) if body else ''
+            sign_str = YsCrypto.get_sign_str(
+                method=self._method,
+                path=self._path,
+                time_stamp=sign_info['timestamp'],
+                nonce_str=sign_info['nonce_str'],
+                body=body
+            )
+            verify = YsCrypto.verify_sign(signature, sign_str, self._private_key)
+            return verify
+        else:
+            return True
+
     def receive_params(self):
         """
         接收前端参数
         """
-        authorization = self._request.META.get('HTTP_AUTHORIZATION', None)
-        params = {} if authorization is None or len(authorization) == 0 else json.loads(authorization)
-        access_token = params.get('access_token', None)
-        user_info_id = params.get('user_info_id', None)
+        try:
+            authorization = self._request.META.get('HTTP_AUTHORIZATION', None)
+            header_params = {} if authorization is None or len(authorization) == 0 else json.loads(authorization)
+        except Exception:
+            raise YsException('E0001', 'authorization数据格式错误')
+        access_token = header_params.get('access_token', None)
+        user_info_id = header_params.get('user_info_id', None)
         if access_token is not None and user_info_id is not None:
             conn = get_redis_connection('cloud_soft_token')
             a_token = conn.get(user_info_id)
@@ -150,30 +186,35 @@ class FrontToBackend(object):
                 raise YsException('E0002', 'access_token访问令牌无效')
         try:
             # 1 生成请求字典
+            url_params = {}
             if (self._request.method == 'GET' or self._request.method == 'POST') and len(self._request.GET) > 0:
                 for key in self._request.GET:
                     if len(self._request.GET.get(key)) == 0:
                         body = json.loads(key)
                         if isinstance(body, str):
-                            params.update(json.loads(body))
+                            url_params.update(json.loads(body))
                         else:
-                            params.update(body)
+                            url_params.update(body)
                     else:
-                        params.update({key: self._request.GET.get(key)})
+                        url_params.update({key: self._request.GET.get(key)})
+            body_params = {}
             if len(self._request.body) > 0:
                 if isinstance(self._request.body, bytes):
                     body = json.loads(self._request.body)
                     body = json.loads(body)
-                    params.update(body)
+                    body_params.update(body)
                 elif isinstance(self._request.body, str):
                     body = json.loads(self._request.body)
                     if isinstance(body, str):
-                        params.update(json.loads(body))
+                        body_params.update(json.loads(body))
                     else:
-                        params.update(body)
+                        body_params.update(body)
+            # 验签
+            if not self.verify_sign(header_params, body_params):
+                raise YsException('E0003', '验签失败')
             # 2 保存请求信息
+            params = {**header_params, **url_params, **body_params}
             user_info_id = None if params.get('user_info_id', None) is None or len(str(params['user_info_id']).strip()) == 0 else int(params['user_info_id'])
-
             is_mobile = self.check_mobile()
             ip = self.get_ip()
             visit_info = self._visit_info.objects.create(ip=ip, method=is_mobile, inter_code=self._inter_code, user_info_id=user_info_id, params=params)

@@ -30,8 +30,9 @@ Description-Content-Type: text/markdown
 包括云软算法Django开发框架中常用的SDK
 
 ## 安装
+
 ```
-$ pip install pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
+$ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
 ```
 
 ## 使用方法
@@ -40,10 +41,67 @@ $ pip install pip install https://codeload.github.com/yunsoft-design/cloud_soft_
 
 ```python
 """
-    前后台交互类使用指南
+    说明：主要用于接收前端数据和返回后端数据,可同时支持明码数据、签名数据和加密数据。考虑大数据分析用户请求,把接收数据,返回数据保存在VisitInfo模型中,把报错信息保存在VisitFailure模型里
+        1 接收前端数据：可同时接收header、ajax和json数据,并进行组合解析
+        2 返回后端数据：可同时返回header、json数据
+
 """
 from django.views.generic import View
+from django.db import models
+from cloud_soft.ys_models import BaseAbsModel, ModelManage
 from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
+
+
+class UserInfo(BaseAbsModel):
+    """
+    用户信息模型
+    """
+    objects = ModelManage()
+    real_name = models.CharField(max_length=50, null=True, verbose_name='姓名')
+    mobile = models.CharField(max_length=20, unique=True, verbose_name='手机')
+
+    class Meta:
+        app_label = 'nucleus'
+        db_table = 'bas_user_info'
+        verbose_name = '用户信息模型'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.real_name
+
+
+class VisitInfo(BaseAbsModel):
+    """
+    日志信息模型
+    """
+    METHOD = (
+        (1, '电脑'),
+        (2, '手机'),
+    )
+    ip = models.CharField(max_length=20, verbose_name='请求ip')
+    method = models.SmallIntegerField(choices=METHOD, default=1, verbose_name='请求方式')
+    user_info = models.ForeignKey(to=UserInfo, null=True, on_delete=models.CASCADE, related_name='user_info_find_visit_info', verbose_name='用户id')
+    inter_code = models.CharField(max_length=20, verbose_name='请求接口编号')
+    params = models.TextField(null=True, verbose_name='上传参数')
+    result = models.TextField(null=True, verbose_name='返回参数')
+    expand = models.IntegerField(default=0, verbose_name='消耗时间')
+
+    class Meta:
+        db_table = 'bas_visit_info'
+        app_label = 'nucleus'
+
+
+class VisitFailure(BaseAbsModel):
+    """
+    日志错误模型
+    """
+    visit_info = models.ForeignKey(to=VisitInfo, on_delete=models.CASCADE, related_name='visit_info_find_visit_failure', verbose_name='日志主表')
+    failure = models.TextField(null=True, verbose_name='错误信息')
+    expand = models.IntegerField(default=0, verbose_name='消耗时间')
+
+    class Meta:
+        db_table = 'bas_visit_failure'
+        app_label = 'nucleus'
 
 
 class Login01(View):
@@ -58,13 +116,13 @@ class Login01(View):
         """
         inter_code = '01-011'  # 接口编号
         # direct = '登录注册 ● 发送验证码'
-        receive = FrontToBackend(request=request, inter_code=inter_code, visit_info='VisitInfo访问表名').receive_params()
+        receive = FrontToBackend(request=request, inter_code=inter_code, visit_info=VisitInfo).receive_params()
         try:
             ret_dct = "def get(inter_code,direct,'接口名')"  # 执行函数,返回字典
             BackendToFront.update_info(visit_info=receive['visit_info'], ret_dct=ret_dct)
             return BackendToFront.res_success(data=ret_dct)
         except Exception as e:
-            BackendToFront.update_error(visit_info=receive['visit_info'], visit_failure='VisitFailure访问报错的表名', e=e)
+            BackendToFront.update_error(visit_info=receive['visit_info'], visit_failure=VisitFailure, e=e)
             return BackendToFront.res_error(error=e)
 
 ```
@@ -73,7 +131,7 @@ class Login01(View):
 
 ```python
 """
-    日期类使用指南
+    说明：针对日期处理的相关方法,不断丰富中...
 """
 from cloud_soft.ys_date import YsDate
 
@@ -97,7 +155,7 @@ wechat_time = YsDate.wechat_time('2022-05-06 11:10:01', '%Y-%m-%d %H:%M:%S')
 
 ```python
 """
-    自定义异常使用指南
+    说明：所有异常返回错误编码、错误路径、错误信息和报错后跳转页面。
 """
 from cloud_soft.ys_exception import YsException
 
@@ -116,7 +174,7 @@ except Exception as e:
 
 ```python
 """
-    OBS服务类使用指南
+    说明：华为obs服务,用于存储图片、语音、视频及其它文件。华为obs服务支持动态链接和链接有效期，可避免反复刷新
 """
 from cloud_soft.ys_observer import YsObserver
 
@@ -157,7 +215,7 @@ content = client.base64_down(
 
 ```python
 """
-    小程序类使用指南
+    说明：主要用于微信小程序相关方法。
 """
 from cloud_soft.ys_observer import YsObserver
 from cloud_soft.ys_applet import YsApplet
@@ -219,7 +277,7 @@ msg_info = client.nogice.send_user_request_msg(
 
 ```python
 """
-    字符串处理类使用指南
+    说明：用于字符串相关处理，完善中...
 """
 from cloud_soft.ys_character import YsCharacter
 
@@ -260,8 +318,7 @@ str_style = YsCharacter.get_chr_style(
 
 ```python
 """
-    装饰函数使用指南
-    本装饰函数主要用于限制访问次数
+    说明：装饰函数，目前支持限制接口单时间内的访问次数,如果单位时间内访问次数过多,可限制访问,也可直接从redis缓存中获取相同数据。
 """
 from django.views.generic import View
 from cloud_soft.ys_decorate import rate_limit
@@ -286,7 +343,7 @@ class Test(View):
 
 ```python
 """
-    正则验证使用指南
+    说明：正则表达式在python中的应用,完善中...
 """
 from cloud_soft.ys_regular import YsRegular
 
@@ -301,7 +358,7 @@ is_cert = YsRegular.cert_is_valid('988774164755584747')
 
 ```python
 """
-    访问令牌使用指南
+    说明：用于生成token和解析token
 """
 from cloud_soft.ys_token import YsToken
 
@@ -320,7 +377,7 @@ info = client.decode_token(token=token)
 
 ```python
 """
-    转换类使用指南
+    说明：用于类型转换，完善中...
 """
 from cloud_soft.ys_transition import YsTransition
 
@@ -343,7 +400,7 @@ to10 = YsTransition.sixty_two_to_dec(to62)
 
 ```python
 """
-    短信验证使用指南
+    说明：用于发送华为短信及短信验证
 """
 from cloud_soft.ys_sms import YsSms
 
@@ -372,7 +429,7 @@ result2 = client.verify_sms(
 
 ```python
 """
-    经纬度转地址使用指南
+    说明：用于高德地图中经纬度转详细地址
 """
 from cloud_soft.ys_location import YsLocation
 
@@ -389,7 +446,7 @@ address = client.get(
 
 ```python
 """
-    华为隐私电话使用指南
+    说明：用于华为隐私电话
 """
 from cloud_soft.ys_private_tel import YsPrivateTel
 
@@ -424,7 +481,7 @@ info3 = client.get_voice_url(
 
 ```python
 """
-    微信公众号SDK使用指南
+    说明：用于微信公众号相关接口
 """
 from cloud_soft.ys_wechat import YsWechat
 
@@ -506,15 +563,15 @@ result14 = client.reply.article(
 
 ```python
 """
-    云软签名使用指南
+    说明：用于数据签名验签和数据加密解密
 """
-from cloud_soft.ys_signature import YsSignature
+from cloud_soft.ys_crypto import YsSignature
 
 # 1 获取包含大小字字母数字在内的随机数,用于加密字符串
 api_key = YsSignature.get_key(16)
 
 # 2 获取组织编号
-org_serial = YsSignature.get_org_number()
+org_serial = YsSignature.get_app_number()
 
 # 3 获取uuid
 uuid = YsSignature.build_nonce_str()
@@ -542,7 +599,7 @@ clear_text = YsSignature.decrypt(
 
 ```python
 """
-    微信支付使用指南
+    说明：用于微信支付相关功能
 """
 from cloud_soft.ys_payment import YsPayment
 from cloud_soft.ys_payment.type import PayType

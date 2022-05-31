@@ -5,12 +5,14 @@ cloud_soft/ys_applet/__init__.py
 cloud_soft/ys_applet/notice.py
 cloud_soft/ys_applet/qr_code.py
 cloud_soft/ys_character/__init__.py
+cloud_soft/ys_crypto/__init__.py
 cloud_soft/ys_date/__init__.py
 cloud_soft/ys_decorate/__init__.py
 cloud_soft/ys_exception/__init__.py
 cloud_soft/ys_interaction/__init__.py
 cloud_soft/ys_location/__init__.py
 cloud_soft/ys_models/__init__.py
+cloud_soft/ys_models/ys_models_manager.py
 cloud_soft/ys_observer/__init__.py
 cloud_soft/ys_payment/__init__.py
 cloud_soft/ys_payment/build.py
@@ -19,7 +21,6 @@ cloud_soft/ys_payment/transaction.py
 cloud_soft/ys_payment/type.py
 cloud_soft/ys_private_tel/__init__.py
 cloud_soft/ys_regular/__init__.py
-cloud_soft/ys_signature/__init__.py
 cloud_soft/ys_sms/__init__.py
 cloud_soft/ys_token/__init__.py
 cloud_soft/ys_transition/__init__.py
