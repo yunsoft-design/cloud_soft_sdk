@@ -14,6 +14,7 @@ import random
 import string
 import time
 import uuid
+import ast
 
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5 as PkcsCipher
@@ -113,7 +114,7 @@ class YsCrypto:
         clear_text = cipher.decrypt(ciphertext=cipher_text, sentinel=private_key)
         clear_text = bytes(clear_text).decode('utf-8')
         try:
-            clear_text = json.loads(clear_text)
+            clear_text = ast.literal_eval(clear_text)
             return clear_text
         except Exception:
             return clear_text

@@ -62,7 +62,7 @@ class BackendToFront:
         if visit_info == 0:
             return 0
         visit_info.result = ret_dct
-        visit_info.expand = int(time.time() - int(visit_info.id/10000000))
+        visit_info.expand = int(time.time() - int(visit_info.id / 10000000))
         visit_info.save()
 
     @staticmethod
@@ -75,8 +75,11 @@ class BackendToFront:
         """
         if visit_info == 0:
             return 0
-        expand = int(time.time() - int(visit_info.id/10000000))
-        visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
+        try:
+            expand = int(time.time() - int(visit_info.id / 10000000))
+            visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
+        except Exception:
+            raise YsException('E0007', '异常错误')
 
 
 class FrontToBackend(object):
@@ -147,45 +150,50 @@ class FrontToBackend(object):
         :param body:
         :return:
         """
-        if self._private_key is not None:
-            signature = YsTransition.standard_str(headers.get('signature', None))
-            sign_lst = signature[18:].split(',', 4)
-            sign_info = {}
-            for item in sign_lst:
-                item_lst = item.split('=', 1)
-                sign_info.update({item_lst[0]: item_lst[1]})
-            signature = eval(sign_info['signature'])
-            body = body if isinstance(body, str) else json.dumps(body) if body else ''
-            sign_str = YsCrypto.get_sign_str(
-                method=self._method,
-                path=self._path,
-                time_stamp=sign_info['timestamp'],
-                nonce_str=sign_info['nonce_str'],
-                body=body
-            )
-            verify = YsCrypto.verify_sign(signature, sign_str, self._private_key)
-            return verify
-        else:
-            return True
+        try:
+            if self._private_key is not None and self._method is not None and self._path is not None:
+                if len(headers) == 0:
+                    return False
+                signature = YsTransition.standard_str(headers.get('signature', None))
+                sign_lst = signature[18:].split(',', 4)
+                sign_info = {}
+                for item in sign_lst:
+                    item_lst = item.split('=', 1)
+                    sign_info.update({item_lst[0]: item_lst[1]})
+                signature = eval(sign_info['signature'])
+                body = body if isinstance(body, str) else json.dumps(body) if body else ''
+                sign_str = YsCrypto.get_sign_str(
+                    method=self._method,
+                    path=self._path,
+                    time_stamp=sign_info['timestamp'],
+                    nonce_str=sign_info['nonce_str'],
+                    body=body
+                )
+                verify = YsCrypto.verify_sign(signature, sign_str, self._private_key)
+                return verify
+            else:
+                return True
+        except Exception:
+            raise YsException('E0005', '验证签名失败')
 
-    def receive_params(self):
+    def get_hearder(self):
         """
-        接收前端参数
+        接收请求头
+        :return:
         """
         try:
             authorization = self._request.META.get('HTTP_AUTHORIZATION', None)
             header_params = {} if authorization is None or len(authorization) == 0 else json.loads(authorization)
+            return header_params
         except Exception:
-            raise YsException('E0001', 'authorization数据格式错误')
-        access_token = header_params.get('access_token', None)
-        user_info_id = header_params.get('user_info_id', None)
-        if access_token is not None and user_info_id is not None:
-            conn = get_redis_connection('cloud_soft_token')
-            a_token = conn.get(user_info_id)
-            if a_token is None or access_token != bytearray(a_token).decode():
-                raise YsException('E0002', 'access_token访问令牌无效')
+            raise YsException('E0001', '请求头参数错误')
+
+    def get_url(self):
+        """
+        接收url请求参数
+        :return:
+        """
         try:
-            # 1 生成请求字典
             url_params = {}
             if (self._request.method == 'GET' or self._request.method == 'POST') and len(self._request.GET) > 0:
                 for key in self._request.GET:
@@ -197,11 +205,22 @@ class FrontToBackend(object):
                             url_params.update(body)
                     else:
                         url_params.update({key: self._request.GET.get(key)})
+            return url_params
+        except Exception:
+            raise YsException('E0002', '请求url参数错误')
+
+    def get_body(self):
+        """
+        接收请求体
+        :return:
+        """
+        try:
             body_params = {}
             if len(self._request.body) > 0:
                 if isinstance(self._request.body, bytes):
                     body = json.loads(self._request.body)
-                    body = json.loads(body)
+                    if isinstance(body, str):
+                        body = json.loads(body)
                     body_params.update(body)
                 elif isinstance(self._request.body, str):
                     body = json.loads(self._request.body)
@@ -209,19 +228,80 @@ class FrontToBackend(object):
                         body_params.update(json.loads(body))
                     else:
                         body_params.update(body)
-            # 验签
-            if not self.verify_sign(header_params, body_params):
-                raise YsException('E0003', '验签失败')
-            # 2 保存请求信息
-            params = {**header_params, **url_params, **body_params}
+            return body_params
+        except Exception:
+            raise YsException('E0003', '请求体参数错误')
+
+    @staticmethod
+    def verify_token(header_params):
+        """
+        验证访问令牌
+        :return:
+        """
+        try:
+            access_token = header_params.get('access_token', None)
+            user_info_id = header_params.get('user_info_id', None)
+            if access_token is not None and user_info_id is not None:
+                conn = get_redis_connection('cloud_soft_token')
+                a_token = conn.get(user_info_id)
+                if a_token is None or access_token != bytearray(a_token).decode():
+                    raise YsException('E0002', 'access_token访问令牌无效')
+        except Exception:
+            raise YsException('E0004', '验证令牌失败')
+
+    def decryption_text(self, body_params):
+        """
+        解密数据
+        :param body_params:
+        :return:
+        """
+        try:
+            cipher_text = body_params.get('cipher_text', None)
+            clear_text = {}
+            if self._private_key is not None and cipher_text is not None:
+                clear_text = YsCrypto.decrypt(self._private_key, cipher_text)
+            return clear_text
+        except Exception:
+            raise YsException('E0005', '解密数据失败')
+
+    def save_receive(self, params):
+        """
+        保存接收参数
+        :param params:
+        :return:
+        """
+        try:
             user_info_id = None if params.get('user_info_id', None) is None or len(str(params['user_info_id']).strip()) == 0 else int(params['user_info_id'])
             is_mobile = self.check_mobile()
             ip = self.get_ip()
             visit_info = self._visit_info.objects.create(ip=ip, method=is_mobile, inter_code=self._inter_code, user_info_id=user_info_id, params=params)
-            print(self._inter_code, params)
-            return {
-                'params': params,
-                'visit_info': visit_info
-            }
-        except Exception as e:
-            raise YsException('E0001', '上传参数错误', e)
+            return visit_info
+        except Exception:
+            raise YsException('E0007', '保存接收参数错误')
+
+    def receive_params(self):
+        """
+        接收前端参数
+        """
+        # 1 接收请求头
+        header_params = self.get_hearder()
+        # 2 接收url请求
+        url_params = self.get_url()
+        # 3 接收请求体
+        body_params = self.get_body()
+        # 4 验证令牌
+        self.verify_token(header_params)
+        # 5 验证签名
+        if not self.verify_sign(header_params, body_params):
+            raise YsException('E0005', '验签失败')
+        # 6 解密数据
+        clear_text = self.decryption_text(body_params)
+        # 7 保存请求信息
+        body_params.pop('cipher_text')
+        params = {**header_params, **url_params, **body_params, **clear_text}
+        visit_info = self.save_receive(params)
+        print(self._inter_code, params)
+        return {
+            'params': params,
+            'visit_info': visit_info
+        }
