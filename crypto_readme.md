@@ -30,9 +30,11 @@
 """
 服务端接收数据使用示例
 """
+from django.views.generic import View
+from django.conf import settings
+from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
 from django.db import models
 from cloud_soft.ys_models import BaseAbsModel
-from cloud_soft.ys_interaction import FrontToBackend
 
 
 class VisitInfo(BaseAbsModel):
@@ -55,15 +57,75 @@ class VisitInfo(BaseAbsModel):
         db_table = 'bas_visit_info'
         app_label = 'nucleus'
 
-receive = FrontToBackend(
-    request='',  # django视图接收的request
-    inter_code='',  # 接口编号
-    visit_info='',  # 访问信息表
-    have_headers=True,  # 是否验证请求头
-    secret_key='',  # token密钥
-    salt='',  # token盐 
-    private_key='',  # 私钥全路径及文件名
-    method='GET',  # 请求方式
-    path='/bases/Sign01/'  # 请求路径
-).receive_params()
+
+class VisitFailure(BaseAbsModel):
+    """
+    日志错误模型
+    """
+    visit_info = models.ForeignKey(to=VisitInfo, on_delete=models.CASCADE, related_name='visit_info_find_visit_failure', verbose_name='日志主表')
+    failure = models.TextField(null=True, verbose_name='错误信息')
+    expand = models.IntegerField(default=0, verbose_name='消耗时间')
+
+    class Meta:
+        db_table = 'bas_visit_failure'
+        app_label = 'nucleus'
+
+class Cryption01(View):
+    """
+    签名测试
+    """
+
+    @classmethod
+    def get(cls, request):
+        """
+        @api {GET} /bases/Cryption01/ 01-031 加密
+        @apiVersion 1.0.0
+        @apiName get_bases_cryption01
+        @apiGroup 1BaseGroup
+        @apiDescription <span style="color:#E62F28;font-size:18px;font-weight:bold">功能描述</span></br>
+        <div style="background-color:#000;color:#EB9732;padding:10px;border-radius:8px;font-family:Consolas;font-size:14px;padding:15px">
+        数据签名测试</br>
+        </div>
+        @apiHeader {String} Content-Type =application/json
+        @apiHeader {String} Accept =application/json
+        @apiHeader {String} User-Agent =https://csoft139.com
+        @apiHeader {String} Authorization 用户授权
+        @apiParam {String} user_info_id 用户id
+        @apiParam {String} app_info_id 应用appid
+        @apiParamExample {json} body 参数样例
+        {
+            "user_info_id":"16539870723521560",
+            "app_info_id":"16539870952345596"
+        }
+        @apiSuccessExample 执行成功
+        HTTP 1.1/ 200K
+        {
+            "status": "1",
+            "msg": "请求成功!",
+            "data": {}
+
+        }
+        @apiUse FailResponse
+        """
+        inter_code = '01-031'
+        receive = {}
+        try:
+            receive = FrontToBackend(
+                request=request, # django请求
+                inter_code=inter_code, # 接口编号
+                visit_info=VisitInfo, # 访问信息表
+                have_headers=True, # 是否检查请求头(请求头包含access_token和signature)
+                secret_key=settings.SECRET_KEY,  # access_token密钥
+                salt=settings.SALT, # access_token盐
+                private_key='', # 私钥全路径
+                method='GET', # 请求方式
+                path='/bases/Sign01/' # 请求路径
+            ).receive_params()
+            ret_dct = {} # 执行业务函数
+            BackendToFront.update_info(visit_info=receive['visit_info'], ret_dct=ret_dct)
+            return BackendToFront.res_success(data=ret_dct)
+        except Exception as e:
+            if (len(receive)) > 0:
+                BackendToFront.update_error(visit_info=receive['visit_info'], visit_failure=VisitFailure, e=e)
+            return BackendToFront.res_error(error=e)
 ```
