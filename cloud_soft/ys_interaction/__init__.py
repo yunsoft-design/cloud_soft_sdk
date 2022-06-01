@@ -12,10 +12,10 @@ import json
 import re
 import time
 from django.shortcuts import HttpResponse
-from django_redis import get_redis_connection
 from ..ys_exception import YsException
 from ..ys_transition import YsTransition
 from ..ys_crypto import YsCrypto
+from ..ys_token import YsToken
 
 
 class BackendToFront:
@@ -35,6 +35,9 @@ class BackendToFront:
                 'data': data
             }))
         response.status_code = status
+        response.headers = {
+            'name':'chengl'
+        }
         return response
 
     @classmethod
@@ -87,7 +90,7 @@ class FrontToBackend(object):
     接收前端传来的数据
     """
 
-    def __init__(self, request, inter_code, visit_info, private_key=None, method=None, path=None):
+    def __init__(self, request, inter_code, visit_info, private_key=None, method=None, path=None, have_headers=False, secret_key=None, salt=None):
         """
         :param request: 前端请求
         :param inter_code: 接口编号
@@ -99,6 +102,9 @@ class FrontToBackend(object):
         self._private_key = private_key
         self._method = method
         self._path = path
+        self._have_headers = have_headers
+        self._secret_key = secret_key
+        self._salt = salt
 
     def check_mobile(self):
         """
@@ -184,9 +190,11 @@ class FrontToBackend(object):
         try:
             authorization = self._request.META.get('HTTP_AUTHORIZATION', None)
             header_params = {} if authorization is None or len(authorization) == 0 else json.loads(authorization)
-            return header_params
+            if self._have_headers and len(header_params) == 0:
+                raise
         except Exception:
             raise YsException('E0001', '请求头参数错误')
+        return header_params
 
     def get_url(self):
         """
@@ -232,20 +240,19 @@ class FrontToBackend(object):
         except Exception:
             raise YsException('E0003', '请求体参数错误')
 
-    @staticmethod
-    def verify_token(header_params):
+    def verify_token(self, header_params):
         """
         验证访问令牌
         :return:
         """
         try:
-            access_token = header_params.get('access_token', None)
-            user_info_id = header_params.get('user_info_id', None)
-            if access_token is not None and user_info_id is not None:
-                conn = get_redis_connection('cloud_soft_token')
-                a_token = conn.get(user_info_id)
-                if a_token is None or access_token != bytearray(a_token).decode():
-                    raise YsException('E0002', 'access_token访问令牌无效')
+            if self._have_headers:
+                access_token = header_params.get('access_token', None)
+                client = YsToken(self._secret_key, self._salt)
+                token_params = client.decode_token(access_token)
+            else:
+                token_params = {}
+            return token_params
         except Exception:
             raise YsException('E0004', '验证令牌失败')
 
@@ -290,15 +297,27 @@ class FrontToBackend(object):
         # 3 接收请求体
         body_params = self.get_body()
         # 4 验证令牌
-        self.verify_token(header_params)
+        token_params = self.verify_token(header_params)
         # 5 验证签名
-        if not self.verify_sign(header_params, body_params):
+        if not self.verify_sign(header_params, body_params if len(body_params) > 0 else url_params):
             raise YsException('E0005', '验签失败')
         # 6 解密数据
-        clear_text = self.decryption_text(body_params)
-        # 7 保存请求信息
-        body_params.pop('cipher_text')
-        params = {**header_params, **url_params, **body_params, **clear_text}
+        if len(body_params) > 0:
+            clear_text = self.decryption_text(body_params)
+        elif len(url_params) > 0:
+            clear_text = self.decryption_text(url_params)
+        else:
+            clear_text = {}
+        # 7 整理上传数据
+        params = {**token_params, **url_params, **body_params, **clear_text}
+        if params.get('cipher_text', None) is not None:
+            params.pop('cipher_text')
+        if params.get('access_token', None) is not None:
+            params.pop('access_token')
+        if params.get('signature', None) is not None:
+            params.pop('signature')
+        # 8 保存请求信息
+
         visit_info = self.save_receive(params)
         print(self._inter_code, params)
         return {

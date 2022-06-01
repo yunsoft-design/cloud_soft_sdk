@@ -76,11 +76,14 @@ class YsCrypto:
         return public_pem
 
     @staticmethod
-    def encrypt(private_dir, clear_text):
+    def encrypt(private_dir, plain_text, lenght=117):
         """
-        公钥加密
+        公钥加密:加密的明文(plaintext)最大长度为：证书位数/8 - 11
+                证书位数是1024,则明文最大长度不超过117,加密后的最大长度为172
+                证书位数是2028,则明文最大长度不超过245,加密后的最大长度为344
         :param private_dir:私钥全路径名
-        :param clear_text: 需要加密数据
+        :param plain_text: 需要加密数据
+        :param lenght: 分段加密长度
         :return: 返回加密的数据
         """
         # 1 得到私钥
@@ -92,27 +95,38 @@ class YsCrypto:
         public_key = private_key.public_key()
         # 3 公钥加密
         cipher = PkcsCipher.new(public_key)
-        clear_text = str(clear_text).encode('utf-8')
-        encrypted_msg = cipher.encrypt(clear_text)
-        cipher_text = base64.b64encode(encrypted_msg)
-        cipher_text = bytearray(cipher_text).decode('utf-8')
-        return cipher_text
+        plain_text = str(plain_text).encode('utf-8')
+        en_lst = []
+        for i in range(0, len(plain_text), lenght):
+            encrypted_msg = cipher.encrypt(plain_text[i:i + lenght])
+            cipher_text = base64.b64encode(encrypted_msg)
+            cipher_text = bytearray(cipher_text).decode('utf-8')
+            en_lst.append(cipher_text)
+        return ''.join(en_lst)
 
     @staticmethod
-    def decrypt(private_dir, cipher_text):
+    def decrypt(private_dir, cipher_text, length=172):
         """
         私钥解密
         :param private_dir: 私钥名称
         :param cipher_text: 加密数据,即需解密的数据
+        :param length: 分解解密1024的证书用1024/8=128,2048的证书用2048/8 = 256
         :return: 返回已解密的数据
         """
         with open(private_dir, 'rb') as f:
             private_pem = f.read()
         private_key = RSA.import_key(private_pem)
         cipher = PkcsCipher.new(private_key)
-        cipher_text = base64.b64decode(cipher_text)
-        clear_text = cipher.decrypt(ciphertext=cipher_text, sentinel=private_key)
-        clear_text = bytes(clear_text).decode('utf-8')
+        de_lst = []
+        c_bytes = b''
+        for i in range(0, len(cipher_text), length):
+            c_text = cipher_text[i:i + length]
+            c_text = base64.b64decode(c_text)
+            c_text = cipher.decrypt(ciphertext=c_text, sentinel=private_key)
+            c_bytes += c_text
+            de_lst.append(c_text)
+        c_text = bytes(c_bytes).decode('utf-8')
+        clear_text = "".join(c_text)
         try:
             clear_text = ast.literal_eval(clear_text)
             return clear_text

@@ -35,7 +35,7 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 """
 from django.views.generic import View
 from django.db import models
-from cloud_soft.ys_models import BaseAbsModel, ModelManage
+from cloud_soft.ys_models import BaseAbsModel
 from cloud_soft.ys_interaction import FrontToBackend, BackendToFront
 
 
@@ -43,7 +43,6 @@ class UserInfo(BaseAbsModel):
     """
     用户信息模型
     """
-    objects = ModelManage()
     real_name = models.CharField(max_length=50, null=True, verbose_name='姓名')
     mobile = models.CharField(max_length=20, unique=True, verbose_name='手机')
 
@@ -552,31 +551,31 @@ result14 = client.reply.article(
 """
     说明：用于数据签名验签和数据加密解密
 """
-from cloud_soft.ys_crypto import YsSignature
+from cloud_soft.ys_crypto import YsCrypto
 
 # 1 获取包含大小字字母数字在内的随机数,用于加密字符串
-api_key = YsSignature.get_key(16)
+api_key = YsCrypto.get_key(16)
 
 # 2 获取组织编号
-org_serial = YsSignature.get_app_number()
+org_serial = YsCrypto.get_app_number()
 
 # 3 获取uuid
-uuid = YsSignature.build_nonce_str()
+uuid = YsCrypto.build_nonce_str()
 
 # 4 生成私钥
-private_pem = YsSignature.get_private_pem()
+private_pem = YsCrypto.get_private_pem()
 
 # 5 私钥转公钥
-public_pem = YsSignature.get_public_key(private_pem)
+public_pem = YsCrypto.get_public_key(private_pem)
 
 # 6 公钥加密
-cipher_text = YsSignature.encrypt(
+cipher_text = YsCrypto.encrypt(
     private_dir='',  # 私钥全路径
     clear_text=''  # 需加密数据
 )
 
 # 7 私钥解密
-clear_text = YsSignature.decrypt(
+clear_text = YsCrypto.decrypt(
     private_dir='',  # 私钥全路径
     cipher_text=''  # 加密数据
 )
