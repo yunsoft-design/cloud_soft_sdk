@@ -12,7 +12,6 @@ import json
 import re
 import time
 from django.shortcuts import HttpResponse
-from django_redis import get_redis_connection
 from ..ys_exception import YsException
 from ..ys_transition import YsTransition
 from ..ys_crypto import YsCrypto
@@ -37,7 +36,7 @@ class BackendToFront:
             }))
         response.status_code = status
         response.headers = {
-            'name':'chengl'
+            'name': 'chengl'
         }
         return response
 
@@ -214,6 +213,8 @@ class FrontToBackend(object):
                             url_params.update(body)
                     else:
                         url_params.update({key: self._request.GET.get(key)})
+                if url_params.get('plaint_text', None) is not None and isinstance(url_params.get('plaint_text'), str):
+                    url_params['plaint_text'] = YsTransition.str_to_dict(url_params['plaint_text'])
             return url_params
         except Exception:
             raise YsException('E0002', '请求url参数错误')
@@ -300,10 +301,11 @@ class FrontToBackend(object):
         # 4 验证令牌
         token_params = self.verify_token(header_params)
         # 5 验证签名
-        if not self.verify_sign(header_params, body_params if len(body_params) > 0 else url_params):
-            raise YsException('E0005', '验签失败')
+        if self._have_headers:
+            if not self.verify_sign(header_params, body_params if len(body_params) > 0 else url_params):
+                raise YsException('E0005', '验签失败')
         # 6 解密数据
-        if len(body_params) > 0:
+        if len(body_params) > 0 and self._have_headers:
             clear_text = self.decryption_text(body_params)
         elif len(url_params) > 0:
             clear_text = self.decryption_text(url_params)

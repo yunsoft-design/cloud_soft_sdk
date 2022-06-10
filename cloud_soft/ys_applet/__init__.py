@@ -32,6 +32,7 @@ class YsApplet(object):
 
     def get_login_info(self, js_code):
         """
+        登录凭证校验：https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/login/auth.code2Session.html
         :param js_code: 前端小程序登录时获取的登录信息
         :return: 包括会话密钥session_key在内的字典
         """
