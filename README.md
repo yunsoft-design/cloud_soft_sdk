@@ -19,6 +19,7 @@
 ## 安装
 
 ```
+$ pip python.exe -m pip install --upgrade pip
 $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
 ```
 

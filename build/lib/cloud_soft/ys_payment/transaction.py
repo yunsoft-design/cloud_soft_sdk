@@ -13,12 +13,13 @@ import string
 from .type import RequestType, PayType
 
 
-def place(self, description, total, openid=None, scene_info=None):
+def place(self, description, total,out_trade_no=None, openid=None, scene_info=None):
     """构造下单请求
     https://pay.weixin.qq.com/wiki/doc/apiv3/apis/index.shtml
     :param self: YsWechatpay类
     :param description: 商品描述
     :param total: 订单金额,以分为单位
+    :param out_trade_no: 订单号
     :param openid: 支付者
     :param scene_info: 结算信息，示例值:{'profit_sharing':False}
     :return: 请求对象
@@ -34,7 +35,8 @@ def place(self, description, total, openid=None, scene_info=None):
         raise Exception('直连商户号不存在.')
     if description:
         params.update({'description': description})
-    out_trade_no = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+    if out_trade_no is None:
+        out_trade_no = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     params.update({'out_trade_no': out_trade_no})
     if not self._notify_url:
         raise Exception('通知地址不存在.')
@@ -45,7 +47,7 @@ def place(self, description, total, openid=None, scene_info=None):
         raise Exception('未输入金额.')
     if openid:
         params.update({'payer': {
-            'openid':openid
+            'openid': openid
         }})
     if self._type in [PayType.JSAPI, PayType.MINIPROG]:
         if not openid:
@@ -63,10 +65,11 @@ def place(self, description, total, openid=None, scene_info=None):
         raise Exception('不存在的微信支付类型')
     ret_lst = self._build.request(path, method=RequestType.POST, data=params)
     ret_info = {
-        'out_trade_no':out_trade_no,
+        'out_trade_no': out_trade_no,
     }
     ret_info.update(json.loads(ret_lst[1]))
     return ret_info
+
 
 def close(self, out_trade_no):
     """关闭订单
@@ -95,7 +98,7 @@ def close(self, out_trade_no):
     return ret_info
 
 
-def query(self,  out_trade_no):
+def query(self, out_trade_no):
     """查询订单
     :param self:
     :param out_trade_no:
@@ -115,6 +118,7 @@ def refund(self,
            refund_money,
            total,
            reason=None,
+           out_refund_no=None
            ):
     """申请退款
     :param self:
@@ -122,13 +126,15 @@ def refund(self,
     :param refund_money:
     :param total:
     :param reason:
+    :param out_refund_no:
     :return:
     """
     if out_trade_no:
         params = {'out_trade_no': out_trade_no}
     else:
         raise Exception('没上传商户订单号.')
-    out_refund_no = ''.join(random.sample(string.ascii_letters + string.digits, 8))
+    if out_refund_no is None:
+        out_refund_no = ''.join(random.sample(string.ascii_letters + string.digits, 8))
     params.update({'out_refund_no': out_refund_no})
     if reason:
         params.update({'reason': reason})

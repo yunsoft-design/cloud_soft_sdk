@@ -52,11 +52,6 @@ setup(
         'pycryptodome',
         'cryptography',
         'crypto',
-        # 'urllib3',
-        # 'pinyin',
-        # 'crypto',
-        # 'itsdangerous',
-        # 'requests',
     ],
 )
 
