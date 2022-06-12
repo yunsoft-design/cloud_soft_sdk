@@ -65,7 +65,6 @@ class YsSms:
         """
         conn = get_redis_connection(self._redis_alias)
         ret = conn.get(receiver)
-        status = 200
         if ret is None:
             header = self.get_header()
             code = self.get_code()
@@ -82,10 +81,8 @@ class YsSms:
                 conn.set(receiver, code)
                 conn.expire(receiver, 60 * 60 * 24 * 365)
             else:
-                status = 400
-        return {
-            'status': status
-        }
+                return False
+        return True
 
     @staticmethod
     def mobile_is_valid(phone_str):

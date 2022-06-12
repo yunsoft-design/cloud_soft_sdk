@@ -44,7 +44,7 @@ def build_authorization(path,
     body = data if isinstance(data, str) else json.dumps(data) if data else ''
     sign_str = '%s\n%s\n%s\n%s\n%s\n' % (method, path, time_stamp, nonce_str, body)
     signature = rsa_sign(private_key=private_key, sign_str=sign_str)
-    authorization = 'WECHATPAY2-SHA256-RSA2048 mchid="%s",nonce_str="%s",ys_crypto="%s",timestamp="%s",serial_no="%s"' % (mchid, nonce_str, signature, time_stamp, serial_no)
+    authorization = 'WECHATPAY2-SHA256-RSA2048 mchid="%s",nonce_str="%s",signature="%s",timestamp="%s",serial_no="%s"' % (mchid, nonce_str, signature, time_stamp, serial_no)
     return authorization
 
 

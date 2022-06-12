@@ -11,11 +11,12 @@ import ast
 import json
 import re
 import time
+import urllib.parse
+
 from django.shortcuts import HttpResponse
 from ..ys_exception import YsException
 from ..ys_transition import YsTransition
 from ..ys_crypto import YsCrypto
-from ..ys_token import YsToken
 
 
 class BackendToFront:
@@ -30,11 +31,11 @@ class BackendToFront:
         """
         response = HttpResponse(
             content=json.dumps({
-                'status': 200,
+                'status': status,
                 'msg': msg,
                 'data': data
             }))
-        response.status_code = status
+        # response.status_code = status
         response.headers = {
             'name': 'chengl'
         }
@@ -90,7 +91,7 @@ class FrontToBackend(object):
     接收前端传来的数据
     """
 
-    def __init__(self, request, inter_code, visit_info, private_key=None, method=None, path=None, have_headers=False, secret_key=None, salt=None):
+    def __init__(self, request, inter_code, visit_info, private_key=None, method=None, path=None, have_headers=False, token_client=None):
         """
         :param request: 前端请求
         :param inter_code: 接口编号
@@ -103,8 +104,7 @@ class FrontToBackend(object):
         self._method = method
         self._path = path
         self._have_headers = have_headers
-        self._secret_key = secret_key
-        self._salt = salt
+        self._token_client = token_client
 
     def check_mobile(self):
         """
@@ -230,7 +230,7 @@ class FrontToBackend(object):
                 if isinstance(self._request.body, bytes):
                     body = json.loads(self._request.body)
                     if isinstance(body, str):
-                        body = json.loads(body)
+                        body = YsTransition.str_to_dict(body)
                     body_params.update(body)
                 elif isinstance(self._request.body, str):
                     body = json.loads(self._request.body)
@@ -248,12 +248,11 @@ class FrontToBackend(object):
         :return:
         """
         try:
-            if self._have_headers:
+            token_params = {}
+            if self._token_client:
                 access_token = header_params.get('access_token', None)
-                client = YsToken(self._secret_key, self._salt)
-                token_params = client.decode_token(access_token)
-            else:
-                token_params = {}
+                if access_token is not None:
+                    token_params = self._token_client.decode_token(access_token)
             return token_params
         except Exception:
             raise YsException('E0004', '验证令牌失败')
@@ -266,10 +265,10 @@ class FrontToBackend(object):
         """
         try:
             cipher_text = body_params.get('cipher_text', None)
-            clear_text = {}
+            plaint_text = {}
             if self._private_key is not None and cipher_text is not None:
-                clear_text = YsCrypto.decrypt(self._private_key, cipher_text)
-            return clear_text
+                plaint_text = YsCrypto.decrypt(self._private_key, urllib.parse.unquote(cipher_text))
+            return plaint_text
         except Exception:
             raise YsException('E0005', '解密数据失败')
 
@@ -292,35 +291,42 @@ class FrontToBackend(object):
         """
         接收前端参数
         """
+        print('===========>1')
         # 1 接收请求头
-        header_params = self.get_hearder()
+        if self._have_headers is not None:
+            header_params = self.get_hearder()
+        else:
+            header_params = {}
         # 2 接收url请求
         url_params = self.get_url()
         # 3 接收请求体
         body_params = self.get_body()
         # 4 验证令牌
-        token_params = self.verify_token(header_params)
+        if self._token_client is not None:
+            token_params = self.verify_token(header_params)
+        else:
+            token_params = {}
+
         # 5 验证签名
         if self._have_headers:
             if not self.verify_sign(header_params, body_params if len(body_params) > 0 else url_params):
                 raise YsException('E0005', '验签失败')
         # 6 解密数据
         if len(body_params) > 0 and self._have_headers:
-            clear_text = self.decryption_text(body_params)
+            plaint_text = self.decryption_text(body_params)
         elif len(url_params) > 0:
-            clear_text = self.decryption_text(url_params)
+            plaint_text = self.decryption_text(url_params)
         else:
-            clear_text = {}
+            plaint_text = {}
         # 7 整理上传数据
-        params = {**token_params, **url_params, **body_params, **clear_text}
-        if params.get('cipher_text', None) is not None:
+        params = {**token_params, **url_params, **body_params, **plaint_text}
+        if params.get('cipher_text', None) is not None and len(plaint_text) > 0:
             params.pop('cipher_text')
         if params.get('access_token', None) is not None:
             params.pop('access_token')
         if params.get('signature', None) is not None:
             params.pop('signature')
         # 8 保存请求信息
-
         visit_info = self.save_receive(params)
         print(self._inter_code, params)
         return {
