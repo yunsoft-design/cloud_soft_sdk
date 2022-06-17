@@ -66,7 +66,7 @@ class BackendToFront:
         if visit_info == 0:
             return 0
         visit_info.result = ret_dct
-        visit_info.expand = int(time.time() - int(visit_info.id / 10000000))
+        visit_info.expand = int(time.time() - int(YsTransition.sixty_two_to_dec(visit_info.id) / 10000000))
         visit_info.save()
 
     @staticmethod
@@ -82,7 +82,8 @@ class BackendToFront:
         try:
             expand = int(time.time() - int(visit_info.id / 10000000))
             visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
-        except Exception:
+        except Exception as e:
+            print('========>',str(e))
             raise YsException('E0007', '异常错误')
 
 
@@ -279,7 +280,7 @@ class FrontToBackend(object):
         :return:
         """
         try:
-            user_info_id = None if params.get('user_info_id', None) is None or len(str(params['user_info_id']).strip()) == 0 else int(params['user_info_id'])
+            user_info_id = None if params.get('user_info_id', None) is None or len(str(params['user_info_id']).strip()) == 0 else str(params['user_info_id']).strip()
             is_mobile = self.check_mobile()
             ip = self.get_ip()
             visit_info = self._visit_info.objects.create(ip=ip, method=is_mobile, inter_code=self._inter_code, user_info_id=user_info_id, params=params)
@@ -291,7 +292,6 @@ class FrontToBackend(object):
         """
         接收前端参数
         """
-        print('===========>1')
         # 1 接收请求头
         if self._have_headers is not None:
             header_params = self.get_hearder()

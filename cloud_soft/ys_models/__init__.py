@@ -21,7 +21,7 @@ class BaseAbsModel(models.Model):
     2 用于系统自动产生的数据
     """
     objects = YsModelsManager()
-    id = models.BigIntegerField(primary_key=True)
+    id = models.CharField(max_length=20, primary_key=True)
     # 因id即为创建时间戳,所以,不需要创建时间字段
     # create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
@@ -33,7 +33,7 @@ class BaseAbsModel(models.Model):
         """
         保存
         """
-        if self.id is None:
+        if self.id is None or len(str(self.id).strip()) == 0:
             self.id = YsTransition.dec_to_sixty_two(int(time.time() * 10000000))
         super().save(*args, **kwargs)
 
