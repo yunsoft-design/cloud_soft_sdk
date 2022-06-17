@@ -11,6 +11,7 @@ import time
 
 from django.db import models
 from .ys_models_manager import YsModelsManager
+from cloud_soft.ys_transition import YsTransition
 
 
 class BaseAbsModel(models.Model):
@@ -21,7 +22,8 @@ class BaseAbsModel(models.Model):
     """
     objects = YsModelsManager()
     id = models.BigIntegerField(primary_key=True)
-    create_time = models.DateTimeField(auto_now_add=True, verbose_name='更新时间')
+    # 因id即为创建时间戳,所以,不需要创建时间字段
+    # create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 
     class Meta:
@@ -32,7 +34,7 @@ class BaseAbsModel(models.Model):
         保存
         """
         if self.id is None:
-            self.id = int(time.time() * 10000000)
+            self.id = YsTransition.dec_to_sixty_two(int(time.time() * 10000000))
         super().save(*args, **kwargs)
 
 
