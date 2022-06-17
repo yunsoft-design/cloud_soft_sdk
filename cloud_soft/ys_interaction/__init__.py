@@ -80,10 +80,9 @@ class BackendToFront:
         if visit_info == 0:
             return 0
         try:
-            expand = int(time.time() - int(visit_info.id / 10000000))
+            expand = int(time.time() - int(YsTransition.sixty_two_to_dec(visit_info.id) / 10000000))
             visit_failure.objects.create(visit_info_id=visit_info.id, failure=str(e), expand=expand)
-        except Exception as e:
-            print('========>',str(e))
+        except Exception:
             raise YsException('E0007', '异常错误')
 
 
