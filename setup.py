@@ -49,9 +49,9 @@ setup(
         "Programming Language :: Python :: 3.8.2",  # Python版本
     ],
     install_requires=[
-        'pycryptodome',
-        'cryptography',
-        'crypto',
+        # 'pycryptodome',
+        # 'cryptography',
+        # 'crypto',
     ],
 )
 

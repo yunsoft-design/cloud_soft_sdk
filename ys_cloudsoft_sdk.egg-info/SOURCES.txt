@@ -32,5 +32,4 @@ cloud_soft/ys_wechat/user.py
 ys_cloudsoft_sdk.egg-info/PKG-INFO
 ys_cloudsoft_sdk.egg-info/SOURCES.txt
 ys_cloudsoft_sdk.egg-info/dependency_links.txt
-ys_cloudsoft_sdk.egg-info/requires.txt
 ys_cloudsoft_sdk.egg-info/top_level.txt
