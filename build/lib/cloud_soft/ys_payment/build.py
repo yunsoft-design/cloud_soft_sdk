@@ -13,8 +13,8 @@ from datetime import datetime
 
 import requests
 
-from .type import RequestType
-from .rule import (aes_decrypt, build_authorization, load_certificate, load_private_key, rsa_verify)
+from .type import RequestType,SignType
+from .rule import (aes_decrypt, build_authorization, load_certificate, load_private_key, rsa_verify,rsa_sign,hmac_sign)
 
 
 class Build:
@@ -209,3 +209,24 @@ class Build:
             if certificate.not_valid_after < cert.not_valid_after:
                 certificate = cert
         return certificate
+
+    def sign(self, data, sign_type=SignType.RSA_SHA256):
+        """
+        计算签名值
+        :param data:
+        :param sign_type:
+        :return:
+        """
+        if sign_type == SignType.RSA_SHA256:
+            sign_str = '\n'.join(data) + '\n'
+            return rsa_sign(self._private_key, sign_str)
+        elif sign_type == SignType.HMAC_SHA256:
+            key_list = sorted(data.keys())
+            sign_str = ''
+            for k in key_list:
+                v = data[k]
+                sign_str += str(k) + '=' + str(v) + '&'
+            sign_str += 'key=' + self._apiv3_key
+            return hmac_sign(self._apiv3_key, sign_str)
+        else:
+            raise ValueError('不存在的加密类型.')

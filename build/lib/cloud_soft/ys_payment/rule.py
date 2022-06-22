@@ -19,6 +19,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.hashes import SHA256
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.primitives.hmac import HMAC
 
 
 def build_authorization(path,
@@ -58,6 +59,19 @@ def rsa_sign(private_key, sign_str):
     message = sign_str.encode('UTF-8')
     signature = private_key.sign(data=message, padding=PKCS1v15(), algorithm=SHA256())
     sign = b64encode(signature).decode('UTF-8').replace('\n', '')
+    return sign
+
+
+def hmac_sign(key, sign_str):
+    """
+    HMAC签名
+    :param key:
+    :param sign_str:
+    :return:
+    """
+    hmac = HMAC(key.encode('UTF-8'), SHA256())
+    hmac.update(sign_str.encode('UTF-8'))
+    sign = hmac.finalize().hex().upper()
     return sign
 
 
@@ -142,3 +156,4 @@ def rsa_verify(timestamp, nonce, body, signature, certificate):
     except InvalidSignature:
         return False
     return True
+

@@ -10,10 +10,12 @@
 import json
 import random
 import string
+import time
+import uuid
 from .type import RequestType, PayType
 
 
-def place(self, description, total,out_trade_no=None, openid=None, scene_info=None):
+def place(self, description, total, out_trade_no=None, openid=None, scene_info=None):
     """构造下单请求
     https://pay.weixin.qq.com/wiki/doc/apiv3/apis/index.shtml
     :param self: YsWechatpay类
@@ -64,10 +66,22 @@ def place(self, description, total,out_trade_no=None, openid=None, scene_info=No
     else:
         raise Exception('不存在的微信支付类型')
     ret_lst = self._build.request(path, method=RequestType.POST, data=params)
+    timestamp = str(int(time.time()))
+    nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
+    package = 'prepay_id=' + json.loads(ret_lst[1])['prepay_id']
+    data = [self._appid, timestamp, nonce_str, package]
+    # print(data)
+    pay_sign = self.sign(data)
     ret_info = {
         'out_trade_no': out_trade_no,
+        'appId': self._appid,
+        'timeStamp': timestamp,
+        'nonceStr': nonce_str,
+        'package': package,
+        'signType': 'RSA',
+        'paySign': pay_sign,
     }
-    ret_info.update(json.loads(ret_lst[1]))
+
     return ret_info
 
 

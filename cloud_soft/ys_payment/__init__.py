@@ -7,6 +7,9 @@
 更新    : 2022-05-27 20:16
 编写    : 陈倚云
 """
+import time
+import uuid
+from .type import SignType
 
 
 class YsPayment:
@@ -65,5 +68,17 @@ class YsPayment:
         }
         body = request.body
         return self._build.callback(headers, body)
+
+    def sign(self, data, sign_type=SignType.RSA_SHA256):
+        """
+        通过JSAPI下单接口获取到发起支付的必要参数prepay_id，然后使用微信支付提供的小程序方法调起小程序支付。
+        :param data:需要签名的参数清单 参见：https://pay.weixin.qq.com/wiki/doc/apiv3/apis/chapter3_5_4.shtml
+            微信支付订单采用RSAwithSHA256算法时，示例值:['wx888','1414561699','5K8264ILTKCH16CQ2502S....','prepay_id=wx201410272009395522657....']
+        :param sign_type:签名类型，默认为RSA，仅支持RSA。
+        :return:
+        """
+        # timestamp = str(int(time.time()))
+        # nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
+        return self._build.sign(data, sign_type)
 
     from .transaction import (place, close, query, refund, query_refund, trade_bill, fundflow_bill, download_bill)

@@ -305,7 +305,6 @@ class FrontToBackend(object):
             token_params = self.verify_token(header_params)
         else:
             token_params = {}
-
         # 5 验证签名
         if self._have_headers:
             if not self.verify_sign(header_params, body_params if len(body_params) > 0 else url_params):
