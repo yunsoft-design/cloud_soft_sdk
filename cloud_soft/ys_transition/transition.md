@@ -1,7 +1,7 @@
-# 转换类SDK
+# 转换类
 ```python
 """
-转换类SDK导入
+导入转换类
 """
 from cloud_soft.ys_transition import YsTransition
 ```
