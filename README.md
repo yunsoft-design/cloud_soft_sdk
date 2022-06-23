@@ -8,6 +8,9 @@
 
 ![qrcode](https://raw.githubusercontent.com/yunsoft-design/image/LICENSE/ys_wechat_qrcode.jpg)
 
+## 目标
+**帮助更多程序员从纯技术中解脱出来，把更多的时间用于深入分析业务逻辑**
+
 ## 适用对象
 
 **有志于开发Python组件的朋友**
