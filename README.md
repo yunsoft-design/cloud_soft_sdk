@@ -22,8 +22,7 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 
 ## 使用方法
 
-### 转换类SDK
-[帮助文档](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_transition/transition.md)  
+[01 转换类SDK](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_transition/transition.md)  
     
 ### 01 前后台交互类使用指南
 
