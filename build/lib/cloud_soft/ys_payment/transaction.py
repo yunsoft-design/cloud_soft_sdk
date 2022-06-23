@@ -66,21 +66,23 @@ def place(self, description, total, out_trade_no=None, openid=None, scene_info=N
     else:
         raise Exception('不存在的微信支付类型')
     ret_lst = self._build.request(path, method=RequestType.POST, data=params)
-    timestamp = str(int(time.time()))
-    nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
-    package = 'prepay_id=' + json.loads(ret_lst[1])['prepay_id']
-    data = [self._appid, timestamp, nonce_str, package]
-    # print(data)
-    pay_sign = self.sign(data)
-    ret_info = {
-        'out_trade_no': out_trade_no,
-        'appId': self._appid,
-        'timeStamp': timestamp,
-        'nonceStr': nonce_str,
-        'package': package,
-        'signType': 'RSA',
-        'paySign': pay_sign,
-    }
+    ret_info = {'out_trade_no': out_trade_no}
+    if self._type == PayType.JSAPI:
+        timestamp = str(int(time.time()))
+        nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
+        package = 'prepay_id=' + json.loads(ret_lst[1])['prepay_id']
+        data = [self._appid, timestamp, nonce_str, package]
+        pay_sign = self.sign(data)
+        ret_info.update({
+            'appId': self._appid,
+            'timeStamp': timestamp,
+            'nonceStr': nonce_str,
+            'package': package,
+            'signType': 'RSA',
+            'paySign': pay_sign,
+        })
+    else:
+        ret_info.update(json.loads(ret_lst[1]))
 
     return ret_info
 

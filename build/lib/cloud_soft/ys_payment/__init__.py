@@ -7,8 +7,6 @@
 更新    : 2022-05-27 20:16
 编写    : 陈倚云
 """
-import time
-import uuid
 from .type import SignType
 
 
@@ -77,8 +75,6 @@ class YsPayment:
         :param sign_type:签名类型，默认为RSA，仅支持RSA。
         :return:
         """
-        # timestamp = str(int(time.time()))
-        # nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
         return self._build.sign(data, sign_type)
 
     from .transaction import (place, close, query, refund, query_refund, trade_bill, fundflow_bill, download_bill)
