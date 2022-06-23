@@ -12,15 +12,9 @@
 帮助更多程序员从纯技术中解脱出来，把更多的时间用于深入分析业务逻辑
 
 ## 适用对象
-
 有django基础，但开发大型项目经验不足的程序员
 
-## 包含内容
-
-Django框架中常用的SDK
-
 ## 安装
-
 ```
 $ python.exe -m pip install --upgrade pip
 $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
@@ -28,6 +22,9 @@ $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs
 
 ## 使用方法
 
+### 转换类SDK
+[帮助文档](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_transition/transition.md)  
+    
 ### 01 前后台交互类使用指南
 
 ```python
