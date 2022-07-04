@@ -14,7 +14,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 setup(
     name="ys-cloudsoft-sdk",
-    version="1.0.0",
+    version="1.0.1",
     author="陈倚云",
     description="云软Django SDK",
     long_description=long_description,
@@ -59,5 +59,5 @@ setup(
     编译  python setup.py build
     打包  python setup.py sdist
     安装  python setup.py install
-    重新安装 pip install D:\CloudSoftSDK\cloud_soft_sdk\dist\ys-cloudsoft-sdk-1.0.0.tar.gz --force-reinstall
+    重新安装 pip install D:\CloudSoftSDK\cloud_soft_sdk\dist\ys-cloudsoft-sdk-1.0.1.tar.gz --force-reinstall
 """
