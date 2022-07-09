@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: ys-cloudsoft-sdk
-Version: 1.0.0
+Version: 1.0.2
 Summary: 云软Django SDK
 Home-page: https://github.com/yunsoft-design/yr-design
 Author: 陈倚云
@@ -15,16 +15,13 @@ Description: # 云软算法-Django框架组件 API Python SDK
         
         ![qrcode](https://raw.githubusercontent.com/yunsoft-design/image/LICENSE/ys_wechat_qrcode.jpg)
         
+        ## 目标
+        帮助更多程序员从纯技术中解脱出来，把更多的时间用于深入分析业务逻辑
+        
         ## 适用对象
-        
-        **有志于开发Python组件的朋友**
-        
-        ## 特性
-        
-        包括云软算法Django开发框架中常用的SDK
+        有django基础，但开发大型项目经验不足的程序员
         
         ## 安装
-        
         ```
         $ python.exe -m pip install --upgrade pip
         $ pip install https://codeload.github.com/yunsoft-design/cloud_soft_sdk/zip/refs/heads/master
@@ -32,6 +29,11 @@ Description: # 云软算法-Django框架组件 API Python SDK
         
         ## 使用方法
         
+        [01 转换类](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_transition/transition.md)  
+        [02 自定义异常类](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_exception/exception.md)  
+        [03 装饰函数](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_decorate/decorate.md)  
+        [03 日期类](https://github.com/yunsoft-design/cloud_soft_sdk/blob/master/cloud_soft/ys_date/date.md)  
+            
         ### 01 前后台交互类使用指南
         
         ```python
