@@ -67,7 +67,7 @@ def place(self, description, total, out_trade_no=None, openid=None, scene_info=N
         raise Exception('不存在的微信支付类型')
     ret_lst = self._build.request(path, method=RequestType.POST, data=params)
     ret_info = {'out_trade_no': out_trade_no}
-    if self._type == PayType.JSAPI:
+    if self._type == PayType.MINIPROG or self._type == PayType.JSAPI:
         timestamp = str(int(time.time()))
         nonce_str = ''.join(str(uuid.uuid4()).split('-')).upper()
         package = 'prepay_id=' + json.loads(ret_lst[1])['prepay_id']

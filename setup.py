@@ -14,7 +14,7 @@ with open("README.md", "r", encoding="utf8") as f:
 
 setup(
     name="ys-cloudsoft-sdk",
-    version="1.0.2",
+    version="1.0.3",
     author="陈倚云",
     description="云软Django SDK",
     long_description=long_description,
